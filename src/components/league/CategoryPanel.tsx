@@ -13,12 +13,16 @@ const CategoryPanel: React.FC<CategoryPanelProps> = ({
   isSelected, 
   onSelect 
 }) => {
-  const { getZonesByCategory } = useLeague();
+  const { getZonesByCategory, getLeague } = useLeague();
   const [activeZoneId, setActiveZoneId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(isSelected);
   
   // Get zones for this category
   const zones = getZonesByCategory(category.id);
+  const league = getLeague(category.leagueId);
+  
+  // Se eliminó el comentario y la condición innecesaria
+  // Si es Liga Participando, mostrar normalmente (eliminada la condición de retorno null)
   
   // Set the first zone as active if none is selected and zones exist
   useEffect(() => {

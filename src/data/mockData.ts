@@ -466,10 +466,29 @@ const standings: Standing[] = [
 
 // Export mock data
 export const mockLeagueData = {
-  leagues,
-  categories,
-  zones,
-  teams,
-  fixtures,
-  standings
+  leagues: [
+    {
+      id: 'liga_masculina',
+      name: 'Liga Participando',
+      description: 'Liga Principal de Fútbol',
+      logo: undefined
+    },
+    {
+      id: 'lifufe',
+      name: 'LIFUFE',
+      description: 'Liga de Fútbol Federado',
+      logo: undefined
+    },
+    {
+      id: 'mundialito',
+      name: 'Mundialito',
+      description: 'Torneo Internacional',
+      logo: undefined
+    }
+  ],
+  categories: categories,
+  zones: zones,
+  teams: teams,
+  fixtures: fixtures,
+  standings: standings
 };

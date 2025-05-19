@@ -75,11 +75,11 @@ const LeaguePage: React.FC = () => {
   // Sort categories based on league
   const sortedCategories = [...categories].sort((a, b) => {
     if (league.id === 'liga_masculina') {
-      // For Liga Masculina, zones come first
-      return b.name.toLowerCase().includes('zona') ? 1 : -1;
+      // Para Liga Masculina, las categorías vienen primero
+      return a.name.toLowerCase().includes('zona') ? 1 : -1;
     } else {
-      // For other leagues, categories come first
-      return b.name.toLowerCase().includes('zona') ? -1 : 1;
+      // Para otras ligas, las zonas vienen primero
+      return a.name.toLowerCase().includes('zona') ? -1 : 1;
     }
   });
   

@@ -8,6 +8,7 @@ interface ZoneFormData {
   name: string;
   leagueId: string;
   categoryId: string;
+  isEditable: boolean; // Agregar esta propiedad
 }
 
 const ZonesPage: React.FC = () => {
@@ -41,7 +42,8 @@ const ZonesPage: React.FC = () => {
     defaultValues: {
       leagueId: selectedLeague,
       categoryId: selectedCategory,
-      name: ''
+      name: '',
+      isEditable: true // Valor por defecto
     }
   });
   
@@ -133,36 +135,14 @@ const ZonesPage: React.FC = () => {
       <select
         id="zoneFilter"
         className="form-input"
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-        disabled={isAdding || !!editingId || !selectedLeague}
+        value={selectedZone}
+        onChange={(e) => setSelectedZone(e.target.value)}
+        disabled={isAdding || !!editingId || !selectedCategory}
       >
         <option value="">Seleccionar zona</option>
-        {categories.map(category => (
-          <option key={category.id} value={category.id}>
-            {category.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-
-  const CategorySelect = () => (
-    <div>
-      <label htmlFor="categoryFilter" className="form-label">
-        Categoría
-      </label>
-      <select
-        id="categoryFilter"
-        className="form-input"
-        value={selectedCategory}
-        onChange={(e) => setSelectedCategory(e.target.value)}
-        disabled={isAdding || !!editingId || !selectedLeague}
-      >
-        <option value="">Seleccionar categoría</option>
-        {categories.map(category => (
-          <option key={category.id} value={category.id}>
-            {category.name}
+        {zones.map(zone => (
+          <option key={zone.id} value={zone.id}>
+            {zone.name}
           </option>
         ))}
       </select>
@@ -209,17 +189,25 @@ const ZonesPage: React.FC = () => {
           </select>
         </div>
 
-        {isMasculina ? (
-          <>
-            <ZoneSelect />
-            <CategorySelect />
-          </>
-        ) : (
-          <>
-            <CategorySelect />
-            <ZoneSelect />
-          </>
-        )}
+        <div>
+          <label htmlFor="categoryFilter" className="form-label">
+            Categoría
+          </label>
+          <select
+            id="categoryFilter"
+            className="form-input"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            disabled={isAdding || !!editingId || !selectedLeague}
+          >
+            <option value="">Seleccionar categoría</option>
+            {categories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Add/Edit Form */}

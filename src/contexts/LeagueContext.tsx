@@ -140,7 +140,13 @@ export const LeagueProvider: React.FC<LeagueProviderProps> = ({ children }) => {
 
   // Category operations
   const getCategoriesByLeague = (leagueId: string) => {
+    if (!leagueId) return [];
     return categories.filter(category => category.leagueId === leagueId);
+  };
+
+  const getZonesByCategory = (categoryId: string) => {
+    if (!categoryId) return [];
+    return zones.filter(zone => zone.categoryId === categoryId);
   };
 
   const addCategory = (category: Omit<Category, 'id'>) => {
@@ -167,10 +173,8 @@ export const LeagueProvider: React.FC<LeagueProviderProps> = ({ children }) => {
   };
 
   // Zone operations
-  const getZonesByCategory = (categoryId: string) => {
-    return zones.filter(zone => zone.categoryId === categoryId);
-  };
-
+  // Eliminar esta segunda declaración de getZonesByCategory que está duplicada
+  
   const addZone = (zone: Omit<Zone, 'id'>) => {
     const newZone = {
       ...zone,
@@ -400,11 +404,6 @@ export const LeagueProvider: React.FC<LeagueProviderProps> = ({ children }) => {
     setStandings(standings.map(standing => 
       standing.id === id ? { ...standing, ...data } : standing
     ));
-  };
-
-  // Agregar la nueva función
-  const getZonesByLeague = (leagueId: string) => {
-    return zones.filter(zone => zone.leagueId === leagueId);
   };
 
   return (
