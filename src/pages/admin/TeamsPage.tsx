@@ -1,29 +1,41 @@
 import React, { useState } from 'react';
 import { useLeague, Team } from '../../contexts/LeagueContext';
 import { useForm } from 'react-hook-form';
-import { Plus, Edit, Trash2, Users, Save, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface TeamFormData {
   name: string;
+  logo?: string;
   leagueId: string;
   categoryId: string;
   zoneId: string;
-  logo?: string;
 }
 
 const TeamsPage: React.FC = () => {
-  const { leagues, teams, categories, zones, addTeam, updateTeam, deleteTeam, getCategoriesByLeague, getZonesByCategory } = useLeague();
+  const { 
+    leagues, 
+    teams,
+    addTeam, 
+    updateTeam, 
+    deleteTeam, 
+    getCategoriesByLeague, 
+    getZonesByCategory,
+    getTeamsByZone
+  } = useLeague();
   
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [selectedLeague, setSelectedLeague] = useState<string>(leagues[0]?.id || '');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedZone, setSelectedZone] = useState<string>('');
   
+  // Get form handling
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<TeamFormData>({
     defaultValues: {
       leagueId: selectedLeague,
-      categoryId: '',
-      zoneId: '',
+      categoryId: selectedCategory,
+      zoneId: selectedZone,
       name: '',
       logo: ''
     }
@@ -37,18 +49,42 @@ const TeamsPage: React.FC = () => {
   const leagueCategories = getCategoriesByLeague(watchLeagueId || selectedLeague);
   
   // Get zones for selected category
-  const categoryZones = getZonesByCategory(watchCategoryId);
+  const categoryZones = getZonesByCategory(watchCategoryId || selectedCategory);
   
-  // Filter teams by selected league
-  const filteredTeams = teams.filter(team => team.leagueId === selectedLeague);
+  // Filter teams by selections
+  const filteredTeams = selectedZone 
+    ? getTeamsByZone(selectedZone)
+    : [];
+  
+  // Initialize select values
+  React.useEffect(() => {
+    if (leagueCategories.length > 0 && !selectedCategory) {
+      setSelectedCategory(leagueCategories[0].id);
+    }
+  }, [leagueCategories, selectedCategory]);
+  
+  React.useEffect(() => {
+    if (categoryZones.length > 0 && !selectedZone) {
+      setSelectedZone(categoryZones[0].id);
+    }
+  }, [categoryZones, selectedZone]);
+  
+  // Update form values when selections change
+  React.useEffect(() => {
+    if (isAdding || editingId) {
+      setValue('leagueId', selectedLeague);
+      setValue('categoryId', selectedCategory);
+      setValue('zoneId', selectedZone);
+    }
+  }, [selectedLeague, selectedCategory, selectedZone, isAdding, editingId, setValue]);
   
   const handleAddClick = () => {
     setIsAdding(true);
     setEditingId(null);
     reset({
       leagueId: selectedLeague,
-      categoryId: leagueCategories[0]?.id || '',
-      zoneId: '',
+      categoryId: selectedCategory,
+      zoneId: selectedZone,
       name: '',
       logo: ''
     });
@@ -59,11 +95,16 @@ const TeamsPage: React.FC = () => {
     setEditingId(team.id);
     reset({
       name: team.name,
+      logo: team.logo,
       leagueId: team.leagueId,
       categoryId: team.categoryId,
-      zoneId: team.zoneId,
-      logo: team.logo
+      zoneId: team.zoneId
     });
+    
+    // Update selections
+    setSelectedLeague(team.leagueId);
+    setSelectedCategory(team.categoryId);
+    setSelectedZone(team.zoneId);
   };
   
   const handleCancelClick = () => {
@@ -92,26 +133,38 @@ const TeamsPage: React.FC = () => {
   const handleLeagueChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const leagueId = e.target.value;
     setSelectedLeague(leagueId);
+    setSelectedCategory('');
+    setSelectedZone('');
     
-    // Reset form with new league
-    if (!isAdding && !editingId) {
-      reset();
+    // Actualizar el formulario si está abierto
+    if (isAdding || editingId) {
+      setValue('leagueId', leagueId);
+      setValue('categoryId', '');
+      setValue('zoneId', '');
     }
   };
   
-  // Update category options when league changes
-  React.useEffect(() => {
-    if (watchLeagueId && leagueCategories.length > 0) {
-      setValue('categoryId', leagueCategories[0].id);
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const categoryId = e.target.value;
+    setSelectedCategory(categoryId);
+    setSelectedZone('');
+    
+    // Actualizar el formulario si está abierto
+    if (isAdding || editingId) {
+      setValue('categoryId', categoryId);
+      setValue('zoneId', '');
     }
-  }, [watchLeagueId, leagueCategories, setValue]);
+  };
   
-  // Update zone options when category changes
-  React.useEffect(() => {
-    if (watchCategoryId && categoryZones.length > 0) {
-      setValue('zoneId', categoryZones[0].id);
+  const handleZoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const zoneId = e.target.value;
+    setSelectedZone(zoneId);
+    
+    // Actualizar el formulario si está abierto
+    if (isAdding || editingId) {
+      setValue('zoneId', zoneId);
     }
-  }, [watchCategoryId, categoryZones, setValue]);
+  };
   
   return (
     <div>
@@ -121,31 +174,73 @@ const TeamsPage: React.FC = () => {
         <button
           className="btn btn-primary flex items-center space-x-2"
           onClick={handleAddClick}
-          disabled={isAdding || !!editingId}
+          disabled={isAdding || !!editingId || !selectedZone}
         >
           <Plus size={18} />
           <span>Agregar Equipo</span>
         </button>
       </div>
       
-      {/* League selector */}
-      <div className="mb-6">
-        <label htmlFor="leagueFilter" className="form-label">
-          Filtrar por Liga
-        </label>
-        <select
-          id="leagueFilter"
-          className="form-input"
-          value={selectedLeague}
-          onChange={handleLeagueChange}
-          disabled={isAdding || !!editingId}
-        >
-          {leagues.map(league => (
-            <option key={league.id} value={league.id}>
-              {league.name}
-            </option>
-          ))}
-        </select>
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label htmlFor="leagueFilter" className="form-label">
+            Liga
+          </label>
+          <select
+            id="leagueFilter"
+            className="form-input"
+            value={selectedLeague}
+            onChange={handleLeagueChange}
+            disabled={isAdding || !!editingId}
+          >
+            {leagues.map(league => (
+              <option key={league.id} value={league.id}>
+                {league.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div>
+          <label htmlFor="categoryFilter" className="form-label">
+            Categoría
+          </label>
+          <select
+            id="categoryFilter"
+            className="form-input"
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            disabled={isAdding || !!editingId || leagueCategories.length === 0}
+          >
+            <option value="">Seleccionar categoría</option>
+            {leagueCategories.map(category => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div>
+          <label htmlFor="zoneFilter" className="form-label">
+            Zona
+          </label>
+          <select
+            id="zoneFilter"
+            className="form-input"
+            value={selectedZone}
+            onChange={handleZoneChange}
+            disabled={isAdding || !!editingId || categoryZones.length === 0}
+          >
+            <option value="">Seleccionar zona</option>
+            {categoryZones.map(zone => (
+              <option key={zone.id} value={zone.id}>
+                {zone.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
       
       {/* Add/Edit Form */}
@@ -173,7 +268,7 @@ const TeamsPage: React.FC = () => {
               
               <div>
                 <label className="form-label" htmlFor="logo">
-                  Logo URL (opcional)
+                  URL del Logo (opcional)
                 </label>
                 <input
                   id="logo"
@@ -183,7 +278,9 @@ const TeamsPage: React.FC = () => {
                   {...register('logo')}
                 />
               </div>
-              
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <label className="form-label" htmlFor="leagueId">
                   Liga
@@ -230,7 +327,7 @@ const TeamsPage: React.FC = () => {
                 )}
               </div>
               
-              <div className="md:col-span-2">
+              <div>
                 <label className="form-label" htmlFor="zoneId">
                   Zona
                 </label>
@@ -277,86 +374,68 @@ const TeamsPage: React.FC = () => {
       )}
       
       {/* Teams List */}
-      {filteredTeams.length > 0 ? (
-        <div className="bg-white border rounded-md overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Equipo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categoría
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Zona
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredTeams.map(team => {
-                const teamCategory = categories.find(c => c.id === team.categoryId);
-                const teamZone = zones.find(z => z.id === team.zoneId);
-                
-                return (
-                  <tr key={team.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
-                          {team.logo ? (
-                            <img 
-                              src={team.logo} 
-                              alt={`${team.name} logo`} 
-                              className="w-6 h-6 rounded-full object-cover"
-                            />
-                          ) : (
-                            <Users size={16} className="text-primary-600" />
-                          )}
-                        </div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {team.name}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {teamCategory?.name || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {teamZone?.name || 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-right">
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          className="text-indigo-600 hover:text-indigo-900"
-                          onClick={() => handleEditClick(team)}
-                          disabled={isAdding || !!editingId}
-                        >
-                          <Edit size={18} />
-                        </button>
-                        <button
-                          className="text-red-600 hover:text-red-900"
-                          onClick={() => handleDeleteTeam(team.id)}
-                          disabled={isAdding || !!editingId}
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+      {selectedZone ? (
+        filteredTeams.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {filteredTeams.map(team => (
+              <div 
+                key={team.id} 
+                className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                      {team.logo ? (
+                        <img 
+                          src={team.logo} 
+                          alt={`${team.name} logo`} 
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-primary-600 font-bold text-lg">
+                          {team.name.substring(0, 2).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <h3 className="font-medium text-lg">{team.name}</h3>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <button
+                      className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                      onClick={() => handleEditClick(team)}
+                      disabled={isAdding || !!editingId}
+                    >
+                      <Edit size={18} />
+                    </button>
+                    <button
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                      onClick={() => handleDeleteTeam(team.id)}
+                      disabled={isAdding || !!editingId}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-gray-50 rounded-md">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay equipos</h3>
+            <p className="text-gray-500 mb-4">
+              No hay equipos en esta zona. Haz clic en "Agregar Equipo" para crear uno.
+            </p>
+          </div>
+        )
       ) : (
         <div className="text-center py-12 bg-gray-50 rounded-md">
-          <Users size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No hay equipos</h3>
-          <p className="text-gray-500 mb-4">
-            No hay equipos en esta liga. Haz clic en "Agregar Equipo" para crear uno.
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Selecciona una zona</h3>
+          <p className="text-gray-500">
+            Selecciona una liga, categoría y zona para ver y gestionar los equipos.
           </p>
         </div>
       )}

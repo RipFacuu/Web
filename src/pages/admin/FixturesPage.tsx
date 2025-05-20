@@ -37,6 +37,9 @@ const FixturesPage: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedZone, setSelectedZone] = useState<string>('');
   
+  // Verificar si la liga seleccionada es "Liga Participando"
+  const isLigaParticipando = selectedLeague === 'liga_masculina';
+  
   // Get form handling
   const { register, handleSubmit, control, reset, watch, setValue, formState: { errors } } = useForm<FixtureFormData>({
     defaultValues: {
@@ -61,13 +64,13 @@ const FixturesPage: React.FC = () => {
   const watchZoneId = watch('zoneId');
   
   // Get categories for selected league
-  const leagueCategories = getCategoriesByLeague(watchLeagueId || selectedLeague);
+  const leagueCategories = getCategoriesByLeague(selectedLeague);
   
   // Get zones for selected category
-  const categoryZones = getZonesByCategory(watchCategoryId || selectedCategory);
+  const categoryZones = getZonesByCategory(selectedCategory);
   
   // Get teams for selected zone
-  const zoneTeams = getTeamsByZone(watchZoneId || selectedZone);
+  const zoneTeams = getTeamsByZone(selectedZone);
   
   // Filter fixtures by selections
   const filteredFixtures = fixtures.filter(fixture => {
@@ -186,12 +189,25 @@ const FixturesPage: React.FC = () => {
     setSelectedLeague(leagueId);
     setSelectedCategory('');
     setSelectedZone('');
+    
+    // Actualizar el formulario si está abierto
+    if (isAdding || editingId) {
+      setValue('leagueId', leagueId);
+      setValue('categoryId', '');
+      setValue('zoneId', '');
+    }
   };
   
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const categoryId = e.target.value;
     setSelectedCategory(categoryId);
     setSelectedZone('');
+    
+    // Actualizar el formulario si está abierto
+    if (isAdding || editingId) {
+      setValue('categoryId', categoryId);
+      setValue('zoneId', '');
+    }
   };
   
   // Get team name by ID
@@ -236,7 +252,7 @@ const FixturesPage: React.FC = () => {
           </select>
         </div>
         
-        <div>
+        <div style={{ display: isLigaParticipando ? 'none' : 'block' }}>
           <label htmlFor="categoryFilter" className="form-label">
             Categoría
           </label>
@@ -264,7 +280,15 @@ const FixturesPage: React.FC = () => {
             id="zoneFilter"
             className="form-input"
             value={selectedZone}
-            onChange={(e) => setSelectedZone(e.target.value)}
+            onChange={(e) => {
+              const zoneId = e.target.value;
+              setSelectedZone(zoneId);
+              
+              // Actualizar el formulario si está abierto
+              if (isAdding || editingId) {
+                setValue('zoneId', zoneId);
+              }
+            }}
             disabled={isAdding || !!editingId || categoryZones.length === 0}
           >
             <option value="">Seleccionar zona</option>
@@ -320,10 +344,77 @@ const FixturesPage: React.FC = () => {
                 )}
               </div>
               
-              {/* Hidden inputs for league, category, zone */}
-              <input type="hidden" {...register('leagueId')} value={selectedLeague} />
-              <input type="hidden" {...register('categoryId')} value={selectedCategory} />
-              <input type="hidden" {...register('zoneId')} value={selectedZone} />
+              {/* Campos de selección visibles */}
+              <div>
+                <label className="form-label" htmlFor="formLeagueId">
+                  Liga
+                </label>
+                <select
+                  id="formLeagueId"
+                  className={cn(
+                    "form-input",
+                    errors.leagueId && "border-red-500"
+                  )}
+                  {...register('leagueId', { required: 'La liga es requerida' })}
+                  onChange={(e) => {
+                    setValue('leagueId', e.target.value);
+                    setValue('categoryId', '');
+                    setValue('zoneId', '');
+                  }}
+                >
+                  {leagues.map(league => (
+                    <option key={league.id} value={league.id}>
+                      {league.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{ display: watchLeagueId === 'liga_masculina' ? 'none' : 'block' }}>
+                <label className="form-label" htmlFor="formCategoryId">
+                  Categoría
+                </label>
+                <select
+                  id="formCategoryId"
+                  className={cn(
+                    "form-input",
+                    errors.categoryId && "border-red-500"
+                  )}
+                  {...register('categoryId', { required: 'La categoría es requerida' })}
+                  onChange={(e) => {
+                    setValue('categoryId', e.target.value);
+                    setValue('zoneId', '');
+                  }}
+                >
+                  <option value="">Seleccionar categoría</option>
+                  {getCategoriesByLeague(watchLeagueId).map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label className="form-label" htmlFor="formZoneId">
+                  Zona
+                </label>
+                <select
+                  id="formZoneId"
+                  className={cn(
+                    "form-input",
+                    errors.zoneId && "border-red-500"
+                  )}
+                  {...register('zoneId', { required: 'La zona es requerida' })}
+                >
+                  <option value="">Seleccionar zona</option>
+                  {getZonesByCategory(watchCategoryId).map(zone => (
+                    <option key={zone.id} value={zone.id}>
+                      {zone.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
             
             {/* Matches */}

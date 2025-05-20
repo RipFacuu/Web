@@ -77,7 +77,7 @@ const StandingsPage: React.FC = () => {
     if (sortedStandings.length === 0) return;
     
     const headers = [
-      'Posición', 'Equipo', 'PJ', 'G', 'E', 'P', 'GF', 'GC', 'DIF', 'PTS'
+      'Posición', 'Equipo', 'PJ', 'PTS'
     ];
     
     // Create CSV content
@@ -85,18 +85,11 @@ const StandingsPage: React.FC = () => {
     
     sortedStandings.forEach((standing, index) => {
       const teamName = getTeamName(standing.teamId);
-      const goalDifference = standing.goalsFor - standing.goalsAgainst;
       
       const row = [
         index + 1,
         `"${teamName}"`, // Quote team name to handle commas
         standing.played,
-        standing.won,
-        standing.drawn,
-        standing.lost,
-        standing.goalsFor,
-        standing.goalsAgainst,
-        goalDifference,
         standing.points
       ];
       
@@ -207,32 +200,12 @@ const StandingsPage: React.FC = () => {
                       PJ
                     </th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      G
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      E
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      P
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      GF
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      GC
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      DIF
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       PTS
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {sortedStandings.map((standing: Standing, index) => {
-                    const goalDifference = standing.goalsFor - standing.goalsAgainst;
-                    
                     return (
                       <tr key={standing.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -243,32 +216,6 @@ const StandingsPage: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                           {standing.played}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                          {standing.won}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                          {standing.drawn}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                          {standing.lost}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                          {standing.goalsFor}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                          {standing.goalsAgainst}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-center">
-                          <span className={
-                            goalDifference > 0 
-                              ? 'text-green-600' 
-                              : goalDifference < 0 
-                                ? 'text-red-600' 
-                                : 'text-gray-500'
-                          }>
-                            {goalDifference > 0 ? '+' : ''}{goalDifference}
-                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-center">
                           {standing.points}
