@@ -282,11 +282,10 @@ const StandingsPage: React.FC = () => {
       const teamsInStandings = new Set(zoneStandings.map(s => s.teamId));
       const availableZoneTeams = zoneTeams.filter(team => !teamsInStandings.has(team.id));
       setAvailableTeams(availableZoneTeams);
-      if (availableZoneTeams.length > 0) {
-        setSelectedTeamId(availableZoneTeams[0].id);
-      } else {
-        setSelectedTeamId('');
-      }
+      setSelectedTeamId(availableZoneTeams.length > 0 ? availableZoneTeams[0].id : '');
+    } else {
+      setAvailableTeams([]);
+      setSelectedTeamId('');
     }
   }, [selectedZone, zoneStandings, zoneTeams]);
   
