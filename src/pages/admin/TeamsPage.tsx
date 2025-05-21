@@ -46,28 +46,54 @@ const TeamsPage: React.FC = () => {
   const watchCategoryId = watch('categoryId');
   
   // Get categories for selected league
-  const leagueCategories = getCategoriesByLeague(watchLeagueId || selectedLeague);
+  const leagueCategories = getCategoriesByLeague(selectedLeague);
   
   // Get zones for selected category
-  const categoryZones = getZonesByCategory(watchCategoryId || selectedCategory);
+  const categoryZones = getZonesByCategory(selectedCategory);
   
   // Filter teams by selections
   const filteredTeams = selectedZone 
     ? getTeamsByZone(selectedZone)
     : [];
   
-  // Initialize select values
+  // Initialize select values when league changes
   React.useEffect(() => {
-    if (leagueCategories.length > 0 && !selectedCategory) {
-      setSelectedCategory(leagueCategories[0].id);
+    if (leagueCategories.length > 0 && (!selectedCategory || !leagueCategories.find(cat => cat.id === selectedCategory))) {
+      const firstCategoryId = leagueCategories[0].id;
+      setSelectedCategory(firstCategoryId);
+      
+      // También actualizar el formulario si está abierto
+      if (isAdding || editingId) {
+        setValue('categoryId', firstCategoryId);
+      }
     }
-  }, [leagueCategories, selectedCategory]);
+  }, [leagueCategories, selectedCategory, setValue, isAdding, editingId]);
   
+  // Initialize zone values when category changes
   React.useEffect(() => {
-    if (categoryZones.length > 0 && !selectedZone) {
-      setSelectedZone(categoryZones[0].id);
+    if (categoryZones.length > 0 && (!selectedZone || !categoryZones.find(zone => zone.id === selectedZone))) {
+      const firstZoneId = categoryZones[0].id;
+      setSelectedZone(firstZoneId);
+      
+      // También actualizar el formulario si está abierto
+      if (isAdding || editingId) {
+        setValue('zoneId', firstZoneId);
+      }
     }
-  }, [categoryZones, selectedZone]);
+  }, [categoryZones, selectedZone, setValue, isAdding, editingId]);
+  
+  // Eliminar estos efectos anteriores que no funcionan correctamente
+  // React.useEffect(() => {
+  //   if (leagueCategories.length > 0 && !selectedCategory) {
+  //     setSelectedCategory(leagueCategories[0].id);
+  //   }
+  // }, [leagueCategories, selectedCategory]);
+  
+  // React.useEffect(() => {
+  //   if (categoryZones.length > 0 && !selectedZone) {
+  //     setSelectedZone(categoryZones[0].id);
+  //   }
+  // }, [categoryZones, selectedZone]);
   
   // Update form values when selections change
   React.useEffect(() => {

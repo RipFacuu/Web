@@ -74,6 +74,14 @@ const CategoriesPage: React.FC = () => {
   const handleLeagueChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const leagueId = e.target.value;
     setSelectedLeague(leagueId);
+    
+    // Asegurarse de que se actualicen las categorías al cambiar de liga
+    const newCategories = getCategoriesByLeague(leagueId);
+    if (newCategories.length > 0) {
+      setSelectedCategory(newCategories[0].id);
+    } else {
+      setSelectedCategory('');
+    }
   };
   
   return (
