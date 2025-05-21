@@ -77,3 +77,48 @@
     @apply border-b border-primary-100 hover:bg-primary-50 transition-colors;
   }
 }
+
+/* Estilos para la tabla de posiciones */
+.standings-container {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.standings-container table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.standings-container th {
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+}
+
+.standings-container td {
+  transition: all 0.2s ease;
+}
+
+.standings-container tr:hover td {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Estilos para los botones */
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
+}

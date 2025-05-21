@@ -397,14 +397,90 @@ export const LeagueProvider: React.FC<LeagueProviderProps> = ({ children }) => {
 
   // Standings operations
   const getStandingsByZone = (zoneId: string) => {
+    if (!zoneId) return [];
     return standings.filter(standing => standing.zoneId === zoneId);
   };
-
+  
   const updateStanding = (id: string, data: Partial<Standing>) => {
-    setStandings(standings.map(standing => 
-      standing.id === id ? { ...standing, ...data } : standing
-    ));
+    // Verificar si el standing ya existe
+    const existingStanding = standings.find(s => s.id === id);
+    
+    if (existingStanding) {
+      // Actualizar standing existente
+      setStandings(standings.map(standing => 
+        standing.id === id ? { ...standing, ...data } : standing
+      ));
+    } else {
+      // Crear nuevo standing
+      const newStanding = {
+        id,
+        teamId: data.teamId || '',
+        leagueId: data.leagueId || '',
+        categoryId: data.categoryId || '',
+        zoneId: data.zoneId || '',
+        points: data.points || 0,
+        played: data.played || 0,
+        won: data.won || 0,
+        drawn: data.drawn || 0,
+        lost: data.lost || 0,
+        goalsFor: data.goalsFor || 0,
+        goalsAgainst: data.goalsAgainst || 0
+      };
+      
+      setStandings([...standings, newStanding]);
+    }
   };
+
+  // Añadir esta función al LeagueContext
+  const importStandingsFromCSV = (csvData: string, zoneId: string) => {
+  try {
+    // Parsear el CSV (formato simple: cada línea es una fila, valores separados por comas)
+    const rows = csvData.split('\n').filter(row => row.trim() !== '');
+    
+    // Ignorar la primera fila (encabezados)
+    const dataRows = rows.slice(1);
+    
+    // Obtener equipos de la zona
+    const zoneTeams = teams.filter(team => team.zoneId === zoneId);
+    
+    // Procesar cada fila
+    dataRows.forEach(row => {
+      const columns = row.split(',').map(col => col.trim());
+      
+      // Formato esperado: POS, EQUIPO, PJ, PTS
+      if (columns.length >= 4) {
+        const teamName = columns[1];
+        const played = parseInt(columns[2]);
+        const points = parseInt(columns[3]);
+        
+        // Buscar el equipo por nombre
+        const team = zoneTeams.find(t => t.name === teamName);
+        
+        if (team && !isNaN(played) && !isNaN(points)) {
+          // Buscar el standing correspondiente
+          const standing = standings.find(s => 
+            s.teamId === team.id && 
+            s.zoneId === zoneId
+          );
+          
+          if (standing) {
+            // Actualizar el standing
+            updateStanding(standing.id, {
+              played,
+              points,
+              // Mantener otros valores o calcularlos si es necesario
+            });
+          }
+        }
+      }
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Error al importar CSV:', error);
+    return false;
+  }
+};
 
   return (
     <LeagueContext.Provider value={{
@@ -441,7 +517,8 @@ export const LeagueProvider: React.FC<LeagueProviderProps> = ({ children }) => {
       updateMatchResult,
       
       getStandingsByZone,
-      updateStanding
+      updateStanding,
+      importStandingsFromCSV // Añadir la nueva función
     }}>
       {children}
     </LeagueContext.Provider>

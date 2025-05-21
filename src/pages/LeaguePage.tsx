@@ -174,3 +174,6 @@ const LeaguePage: React.FC = () => {
 };
 
 export default LeaguePage;
+
+// No necesitamos modificar más este archivo ya que el botón de exportar CSV
+// está incluido directamente en el componente StandingsTable
