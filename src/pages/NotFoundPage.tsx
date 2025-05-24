@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
+import { ImageGallery } from '../components/ImageGallery';
 
 const NotFoundPage: React.FC = () => {
   return (
@@ -15,6 +16,10 @@ const NotFoundPage: React.FC = () => {
       <p className="text-gray-600 text-center max-w-md mb-8">
         Lo sentimos, la página que estás buscando no existe o ha sido movida.
       </p>
+
+      <div className="w-full max-w-6xl mx-auto mb-8">
+        <ImageGallery />
+      </div>
       
       <Link to="/" className="btn btn-primary">
         Volver al inicio

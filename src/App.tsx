@@ -14,6 +14,7 @@ import ResultsPage from './pages/admin/ResultsPage';
 import StandingsPage from './pages/admin/StandingsPage';
 import CategoriesPage from './pages/admin/CategoriesPage';
 import ZonesPage from './pages/admin/ZonesPage';
+import FlyersPage from './pages/admin/FlyersPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
                 <Route path="standings" element={<StandingsPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="zones" element={<ZonesPage />} />
+                <Route path="flyers" element={<FlyersPage />} />
               </Route>
               
               <Route path="*" element={<NotFoundPage />} />

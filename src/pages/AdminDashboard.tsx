@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { Users, Calendar, ClipboardList, Trophy, ListFilter, Layers } from 'lucide-react';
+import { Users, Calendar, ClipboardList, Trophy, ListFilter, Layers, Image } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { cn } from '../utils/cn';
 
@@ -107,12 +107,33 @@ const AdminDashboard: React.FC = () => {
                   <span>Zonas</span>
                 </NavLink>
               </div>
+
+              {/* Nueva sección para Cursos y Capacitaciones */}
+              <div className="p-4 bg-primary-600 text-white border-t border-primary-700">
+                <h2 className="font-medium text-sm uppercase tracking-wider text-yellow-50">Cursos y Capacitaciones</h2>
+              </div>
+              <div className="p-2">
+                <NavLink
+                  to="/admin/flyers"
+                  className={({ isActive }) => cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-md text-sm transition-colors",
+                    isActive
+                      ? "bg-primary-50 text-primary-700"
+                      : "text-gray-700 hover:bg-gray-50"
+                  )}
+                >
+                  <Image size={18} />
+                  <span>Flyers</span>
+                </NavLink>
+              </div>
             </nav>
           </aside>
-          
-          {/* Main Content */}
-          <main className="lg:col-span-5 bg-white rounded-md shadow-sm p-6">
-            <Outlet />
+
+          {/* Main Content Area */}
+          <main className="lg:col-span-5">
+            <div className="bg-white rounded-md shadow-sm p-6">
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>
