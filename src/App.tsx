@@ -15,7 +15,6 @@ import StandingsPage from './pages/admin/StandingsPage';
 import CategoriesPage from './pages/admin/CategoriesPage';
 import ZonesPage from './pages/admin/ZonesPage';
 import FlyersPage from './pages/admin/FlyersPage';
-import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
   return (
